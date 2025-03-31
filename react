@@ -1,0 +1,152 @@
+import { useState } from "react";
+import { Button, Card, CardContent } from "@/components/ui";
+import { motion } from "framer-motion";
+import {
+  Lightbulb,
+  ToggleLeft,
+  Plug,
+  Curtains,
+  Kettle,
+  Doorbell,
+  CircleDot,
+  Gauge,
+  Mic,
+  Camera
+} from "lucide-react";
+
+const questions = [
+  { id: "light", text: "Хотите управлять освещением?", icon: Lightbulb },
+  { id: "switches", text: "Какие выключатели предпочитаете?", icon: ToggleLeft, options: ["433 МГц", "Zigbee", "Wi-Fi", "Механические"] },
+  { id: "sockets", text: "Нужны ли умные розетки?", icon: Plug },
+  { id: "curtains", text: "Нужен ли контроль штор?", icon: Curtains },
+  { id: "kettle", text: "Хотите управлять чайником?", icon: Kettle },
+  { id: "intercom", text: "Нужен ли умный домофон?", icon: Doorbell },
+  { id: "buttons", text: "Хотите беспроводные кнопки?", icon: CircleDot },
+  { id: "sensors", text: "Какие датчики вам нужны?", icon: Gauge, options: ["Открытия", "Температуры", "Протечки", "Присутствия", "Дыма"] },
+  { id: "assistant", text: "Нужен ли голосовой помощник?", icon: Mic },
+  { id: "cameras", text: "Хотите установить камеры?", icon: Camera }
+];
+
+export default function SmartHomeQuiz() {
+  const [answers, setAnswers] = useState({});
+  const [step, setStep] = useState(0);
+
+  const handleAnswer = (id, value) => {
+    setAnswers((prev) => ({ ...prev, [id]: value }));
+    setStep((prev) => prev + 1);
+  };
+
+  const handleBack = () => {
+    setStep((prev) => Math.max(0, prev - 1));
+  };
+
+  const progress = ((step) / questions.length) * 100;
+
+  if (step >= questions.length) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-2xl mx-auto"
+      >
+        <Card className="p-6 bg-white shadow-lg rounded-2xl">
+          <CardContent>
+            <h2 className="text-2xl font-bold mb-6 text-center">Рекомендованные устройства</h2>
+            <div className="space-y-4">
+              {Object.entries(answers).map(([key, value]) => (
+                <div key={key} className="flex items-start p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <h3 className="font-medium capitalize">{key.replace(/_/g, ' ')}</h3>
+                    <p className="text-gray-600">{Array.isArray(value) ? value.join(", ") : value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button 
+              onClick={() => {
+                setStep(0);
+                setAnswers({});
+              }} 
+              className="w-full mt-6 py-3 text-lg"
+            >
+              Пройти ещё раз
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  const question = questions[step];
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-2xl mx-auto"
+    >
+      <Card className="p-6 bg-white shadow-lg rounded-2xl">
+        <CardContent>
+          {/* Progress bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+            <motion.div 
+              className="bg-blue-600 h-2.5 rounded-full" 
+              initial={{ width: `${progress}%` }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+          
+          {/* Question */}
+          <div className="flex items-center gap-4 mb-6">
+            <question.icon className="w-8 h-8 text-blue-600" />
+            <h2 className="text-xl font-bold">{question.text}</h2>
+          </div>
+          
+          {/* Answers */}
+          <div className="grid grid-cols-2 gap-4">
+            {question.options ? (
+              question.options.map((option) => (
+                <Button
+                  key={option}
+                  onClick={() => handleAnswer(question.id, option)}
+                  className="w-full py-3 text-lg"
+                  variant="outline"
+                >
+                  {option}
+                </Button>
+              ))
+            ) : (
+              <>
+                <Button 
+                  onClick={() => handleAnswer(question.id, "Да")} 
+                  className="w-full py-3 text-lg"
+                >
+                  Да
+                </Button>
+                <Button 
+                  onClick={() => handleAnswer(question.id, "Нет")} 
+                  className="w-full py-3 text-lg"
+                  variant="outline"
+                >
+                  Нет
+                </Button>
+              </>
+            )}
+          </div>
+          
+          {/* Back button */}
+          {step > 0 && (
+            <Button 
+              onClick={handleBack} 
+              variant="ghost" 
+              className="w-full mt-4"
+            >
+              Назад
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
